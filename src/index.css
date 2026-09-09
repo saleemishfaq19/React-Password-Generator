@@ -1,12 +1,1 @@
 @import "tailwindcss";
-
-button:active {
-    background-color: gray;
-    color: black;
-    border-radius: 5px;
-}
-
-input {
-    width: 350px;
-    border-radius: 5px;
-}

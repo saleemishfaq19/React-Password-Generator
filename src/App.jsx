@@ -1,75 +1,89 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "./components/Context";
+import TodoItems from "./components/TodoItems";
 
 function App() {
-  const [length, setLength] = useState(8)
-  const [numAllowed, setNumAllowed] = useState(false)
-  const [charAllowed, setCharAllowed] = useState(false)
-  const [password, setpassword] = useState("")
-  const passwordGenerator = useCallback(() => {
-    let pass = ""
-    let str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    if (numAllowed) str += '0123456789'
-    if (charAllowed) str += '!@#$%^&*(){}~`'
-    for (let i = 1; i <= length; i++) {
-      let char = Math.floor(Math.random() * str.length + 1)
-      pass += str.charAt(char)
-    }
-    setpassword(pass)
-  }, [length, numAllowed, charAllowed, setpassword])
+  const [Msg, setMsg] = useState("");
 
-  const passwordRef = useRef(null)
+  const { todos, addItem } = useContext(UserContext);
 
-  const copyPassword = () => {
-    passwordRef.current?.select()
-    passwordRef.current?.setSelectionRange(0, 32)
-    window, navigator.clipboard.writeText(password)
-  }
   useEffect(() => {
-    passwordGenerator()
-  }, [length, numAllowed, charAllowed, passwordGenerator])
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
+
+  const handleAddTodo = () => {
+    if (Msg.trim() === "") return;
+
+    addItem(Msg);
+    setMsg("");
+  };
+
   return (
-    <>
-      <div className='w-full max-w-md mx-auto shadow-md  bg-gray-700 rounded my-16  text-center p-3 text-white'>
-        <h1 className='text-2xl '>Password Generator</h1>
-        <div className='rounded m-4 text-center overflow-hidden'>
-          <div className='flex justify-center item-center '>
-            <input
-              type="text"
-              value={password}
-              className='outline-none w-full py-1 px-3 bg-white  text-orange-400 text-black'
-              placeholder='password'
-              readOnly
-              ref={passwordRef}
-            />
-            <button onClick={copyPassword} className='bg-blue-600 px-5'>copy</button>
-          </div>
-          <div className='flex text-center gap-x-1 my-2'>
-            <input
-              type="range"
-              max={32}
-              min={8}
-              value={length}
-              onChange={(e) => { setLength(e.target.value) }}
-              className='cursor-pointer'
-            />
-            <label className='text-orange-400'>Length:{length}</label>
-            <input
-              type="checkbox"
-              defaultChecked={numAllowed}
-              id='numberInput'
-              onChange={(e) => { setNumAllowed((prev) => !prev) }} />
-            <label htmlFor='numberInput'>Number</label>
-            <input
-              type="checkbox"
-              defaultChecked={charAllowed}
-              id='characterInput'
-              onChange={(e) => { setCharAllowed((prev) => !prev) }} />
-            <label htmlFor='characterInput'>Character</label>
-          </div>
+    <div className="min-h-screen bg-gray-950 flex justify-center items-center p-5">
+      <div className="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-2xl shadow-xl p-8">
+
+        <h1 className="text-3xl font-bold text-white text-center mb-6">
+          Todo App
+        </h1>
+
+        <div className="flex gap-3 mb-6">
+          <input
+            className="
+              flex-1
+              px-4 py-3
+              bg-gray-800
+              text-white
+              border border-gray-600
+              rounded-xl
+              outline-none
+              placeholder-gray-400
+              focus:border-blue-500
+              focus:ring-2
+              focus:ring-blue-500
+            "
+            type="text"
+            placeholder="Enter a new todo..."
+            value={Msg}
+            onChange={(e) => setMsg(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleAddTodo();
+              }
+            }}
+          />
+
+          <button
+            className="
+              px-5 py-3
+              bg-blue-600
+              text-white
+              font-medium
+              rounded-xl
+              hover:bg-blue-700
+              active:scale-95
+              transition
+            "
+            onClick={handleAddTodo}
+          >
+            Add Todo
+          </button>
         </div>
+
+        <div>
+          {todos.length === 0 ? (
+            <p className="text-gray-400 text-center py-6">
+              No todos added yet.
+            </p>
+          ) : (
+            todos.map((item) => (
+              <TodoItems key={item.id} todo={item} />
+            ))
+          )}
+        </div>
+
       </div>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
